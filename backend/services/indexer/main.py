@@ -23,6 +23,7 @@ from fastapi import FastAPI, BackgroundTasks, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
+from transition_agents import run_specialized_agent_orchestration
 
 class ProjectAnalyzeRequest(BaseModel):
     project_id: Optional[str] = ""
@@ -32,6 +33,7 @@ class ProjectAnalyzeRequest(BaseModel):
     geos: list[str] = []
     repo_url: Optional[str] = ""
     git_token: Optional[str] = ""
+    adapters: Optional[dict] = {}
     telemetry_data: Optional[dict] = {}
 
 class ResolveGapRequest(BaseModel):
@@ -776,14 +778,26 @@ def analyze_project(req: ProjectAnalyzeRequest):
     reg = load_registry()
     pid = req.project_id or make_app_id(req.repo_url or req.project_name)
     
-    # Generate comprehensive hostile transition artifacts
-    artifacts = generate_hostile_analysis_artifacts(
-        project_id=pid,
-        project_name=req.project_name,
-        transition_type=req.transition_type,
-        scopes=req.scopes,
-        geos=req.geos
-    )
+    # Execute multi-agent orchestration dynamically spawning tower agents
+    try:
+        artifacts = run_specialized_agent_orchestration(
+            project_id=pid,
+            project_name=req.project_name,
+            transition_type=req.transition_type,
+            scopes=req.scopes,
+            geos=req.geos,
+            adapters=req.adapters or {},
+            repo_url=req.repo_url or ""
+        )
+    except Exception as e:
+        print(f"[projects/analyze] Specialized agent execution fallback: {e}")
+        artifacts = generate_hostile_analysis_artifacts(
+            project_id=pid,
+            project_name=req.project_name,
+            transition_type=req.transition_type,
+            scopes=req.scopes,
+            geos=req.geos
+        )
     
     # Calculate simulated or real files & chunks
     file_count = len(artifacts["graph"]["nodes"]) * 3
@@ -806,6 +820,7 @@ def analyze_project(req: ProjectAnalyzeRequest):
         "gaps": artifacts["gaps"],
         "kt_packs": artifacts["kt_packs"],
         "graph": artifacts["graph"],
+        "orchestration_trace": artifacts.get("orchestration_trace", []),
         "telemetry": req.telemetry_data or {}
     }
     
