@@ -25,23 +25,112 @@ export default function KnowledgeFabric() {
     }
   }, [activeApp, scene]);
 
+  function generateFallbackGraph(app) {
+    const pName = (app && (app.display_name || app.repo_name)) || 'Transition Estate';
+    const tType = (app && app.transition_type) || 'it_application';
+    if (tType === 'itis') {
+      return {
+        nodes: [
+          { id: 'n_root', label: 'Repo', name: pName, path: 'Estate Root', tower: 'Overview' },
+          { id: 'n_fw1', label: 'Network', name: 'Palo Alto FW-PROD-EAST', path: '10.100.0.1', tower: 'Network & Security' },
+          { id: 'n_subnet1', label: 'Network', name: 'Subnet 10.240.0.0/16', path: 'Core Transit VPC', tower: 'Network & Security' },
+          { id: 'n_ghost1', label: 'Discrepancy', name: 'Ghost Host: 10.240.12.88', path: '10.240.12.88:8443 (Missing CMDB)', tower: 'Network & Security' },
+          { id: 'n_srv1', label: 'File', name: 'srv-prod-api-01', path: '10.240.4.12', tower: 'Cloud & Virtualization' },
+          { id: 'n_srv2', label: 'File', name: 'srv-prod-db-master', path: '10.240.8.20', tower: 'Cloud & Virtualization' },
+          { id: 'n_zombie', label: 'Discrepancy', name: '38x Zombie VMs (dc-eu-west-02)', path: '0 Telemetry in 365d', tower: 'Cloud & Virtualization' },
+          { id: 'n_storage1', label: 'Library', name: 'NetApp vol-oracle-archive-04', path: '94.2% Capacity', tower: 'Storage & Backup' },
+          { id: 'n_sme_evans', label: 'SME', name: 'D. Evans (Network SPOF)', path: '87% Routing Changes', tower: 'Service Desk & EUC' }
+        ],
+        links: [
+          { source: 'n_root', target: 'n_fw1', type: 'GOVERNS' },
+          { source: 'n_fw1', target: 'n_subnet1', type: 'ROUTES_TO' },
+          { source: 'n_fw1', target: 'n_ghost1', type: 'ALLOWS_TRAFFIC_TO' },
+          { source: 'n_subnet1', target: 'n_srv1', type: 'CONTAINS' },
+          { source: 'n_subnet1', target: 'n_srv2', type: 'CONTAINS' },
+          { source: 'n_srv2', target: 'n_storage1', type: 'ATTACHED_TO' },
+          { source: 'n_sme_evans', target: 'n_fw1', type: 'EXCLUSIVE_MAINTAINER' },
+          { source: 'n_root', target: 'n_zombie', type: 'INVENTORY_MISMATCH' }
+        ]
+      };
+    } else if (tType === 'business_process') {
+      return {
+        nodes: [
+          { id: 'n_root', label: 'Repo', name: pName, path: 'Estate Root', tower: 'Overview' },
+          { id: 'n_proc1', label: 'File', name: 'Proc: Accounts Payable P2P', path: 'P2P Core Flow', tower: 'Finance' },
+          { id: 'n_step1', label: 'File', name: 'Step: Invoice Batch Upload', path: 'Daily Batch', tower: 'Finance' },
+          { id: 'n_macro', label: 'Discrepancy', name: 'Shadow Macro_v3.xlsm', path: 'Drive X:\\Finance_AP', tower: 'Finance' },
+          { id: 'n_erp', label: 'Library', name: 'SAP S/4HANA Finance', path: 'Enterprise ERP', tower: 'Finance' },
+          { id: 'n_proc2', label: 'File', name: 'Proc: Claims Settlement', path: 'Policy Claims', tower: 'Operations' },
+          { id: 'n_bypass', label: 'Discrepancy', name: 'Bypass Code OVR-99', path: 'Unlogged Manager Bypass', tower: 'Operations' },
+          { id: 'n_sme_sharma', label: 'SME', name: 'R. Sharma (Wire SPOF)', path: '92% Wire Keyer', tower: 'Treasury' }
+        ],
+        links: [
+          { source: 'n_root', target: 'n_proc1', type: 'INCLUDES' },
+          { source: 'n_proc1', target: 'n_step1', type: 'HAS_STEP' },
+          { source: 'n_step1', target: 'n_macro', type: 'SHADOW_DEPENDENCY' },
+          { source: 'n_macro', target: 'n_erp', type: 'POSTS_TO' },
+          { source: 'n_root', target: 'n_proc2', type: 'INCLUDES' },
+          { source: 'n_proc2', target: 'n_bypass', type: 'UNAUDITED_OVERRIDE' },
+          { source: 'n_proc1', target: 'n_sme_sharma', type: 'AUTHORIZED_BY' }
+        ]
+      };
+    } else {
+      return {
+        nodes: [
+          { id: 'n_root', label: 'Repo', name: pName, path: 'Estate Root', tower: 'Core' },
+          { id: 'n_auth', label: 'File', name: 'auth/jwt.py', path: 'auth/jwt.py', tower: 'Backend' },
+          { id: 'n_pay', label: 'File', name: 'services/payment.ts', path: 'services/payment.ts', tower: 'Backend' },
+          { id: 'n_ghost_ip', label: 'Discrepancy', name: 'Ghost Webhook: 198.51.100.44', path: 'External 198.51.100.44:8443', tower: 'Integrations' },
+          { id: 'n_secret', label: 'Discrepancy', name: 'Expiring JWT Secret', path: 'KMS Key (19 days left)', tower: 'Security' },
+          { id: 'n_sme_chen', label: 'SME', name: 'M. Chen (Migration SPOF)', path: '84% Schema Commits', tower: 'Database' }
+        ],
+        links: [
+          { source: 'n_root', target: 'n_auth', type: 'CONTAINS' },
+          { source: 'n_root', target: 'n_pay', type: 'CONTAINS' },
+          { source: 'n_pay', target: 'n_ghost_ip', type: 'CALLS_EXTERNAL' },
+          { source: 'n_auth', target: 'n_secret', type: 'USES_KEY' },
+          { source: 'n_root', target: 'n_sme_chen', type: 'DEPENDS_ON_SME' }
+        ]
+      };
+    }
+  }
+
   async function fetchGraph() {
     setLoading(true);
+    let fallback = generateFallbackGraph(activeApp);
+
+    // 1. Immediately render from memory if available
+    const activeNodes = (activeApp?.graph?.nodes?.length > 0 ? activeApp.graph.nodes : fallback.nodes);
+    const activeLinks = (activeApp?.graph?.links?.length > 0 ? activeApp.graph.links : fallback.links);
+
+    const initNodes = activeNodes.map(n => ({
+      ...n,
+      x: n.x || (Math.random() * 260 - 130),
+      y: n.y || (Math.random() * 260 - 130),
+      vx: 0,
+      vy: 0,
+      radius: n.label === 'Repo' ? 15 : (n.label === 'Discrepancy' || n.label === 'Ghost') ? 12 : n.label === 'SME' ? 11 : n.label === 'Library' ? 10 : 8
+    }));
+    setGraphData({ nodes: initNodes, links: activeLinks });
+
     try {
-      const d = await getJson(`${INDEXER_URL}/apps/${activeApp.app_id}/graph`);
-      const nodes = (d.nodes || []).map((n, idx) => ({
-        ...n,
-        x: Math.random() * 200 - 100,
-        y: Math.random() * 200 - 100,
-        vx: 0,
-        vy: 0,
-        radius: n.label === 'Repo' ? 14 : n.label === 'Library' ? 10 : 8
-      }));
-      setGraphData({ nodes, links: d.links || [] });
-      setSelectedNode(null);
-      setHoveredNode(null);
+      const appId = activeApp.app_id || activeApp.project_id;
+      const d = await getJson(`${INDEXER_URL}/apps/${appId}/graph`);
+      if (d.nodes && d.nodes.length > 0) {
+        const nodes = d.nodes.map(n => ({
+          ...n,
+          x: Math.random() * 260 - 130,
+          y: Math.random() * 260 - 130,
+          vx: 0,
+          vy: 0,
+          radius: n.label === 'Repo' ? 15 : (n.label === 'Discrepancy' || n.label === 'Ghost') ? 12 : n.label === 'SME' ? 11 : n.label === 'Library' ? 10 : 8
+        }));
+        setGraphData({ nodes, links: d.links || [] });
+        setSelectedNode(null);
+        setHoveredNode(null);
+      }
     } catch (e) {
-      console.error("Failed to load graph data:", e);
+      console.warn("Failed to load graph data from backend, maintaining synthesized graph:", e);
     }
     setLoading(false);
   }

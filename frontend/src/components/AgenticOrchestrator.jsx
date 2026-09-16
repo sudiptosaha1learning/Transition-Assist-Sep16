@@ -118,7 +118,6 @@ export default function AgenticOrchestrator() {
         ]
       });
     } else {
-      // IT Application
       fleet.push({
         id: 'agent_codebase_sec',
         name: 'Codebase & AST Dependency Agent',
@@ -136,6 +135,28 @@ export default function AgenticOrchestrator() {
           'DISCREPANCY DETECTED: Dark outbound webhook and single developer bottleneck.'
         ]
       });
+
+      const hasItsm = orchestratingProject?.uploaded_files?.app_tickets ||
+                      orchestratingProject?.uploaded_files?.servicedesk ||
+                      orchestratingProject?.adapters?.servicedesk;
+      if (hasItsm) {
+        fleet.push({
+          id: 'agent_itsm_telemetry',
+          name: 'ITSM Ticket Telemetry & Incident Correlator',
+          tower: 'ITSM & Incident Analytics',
+          role: 'Incident Velocity & Hotspot Correlator',
+          status: 'Waiting',
+          tool: 'itsm_parser.correlate_tickets_with_ast()',
+          log: 'Ingesting historical incident tickets and cross-referencing AST modules...',
+          thoughtSteps: [
+            'Ingesting uploaded ticket history and ServiceNow incident log (1,420 records)...',
+            'Correlating incident categories with code modules: 64% of P1/P2 tickets stem from payment gateway timeouts.',
+            'Cross-referencing resolution notes with git commit history...',
+            'Detected recurring manual database unlocks performed by M. Chen during off-hours.',
+            'DISCREPANCY DETECTED: Tribal knowledge dependency on unlogged hotfix scripts.'
+          ]
+        });
+      }
     }
 
     // Common Orchestration Agents
@@ -212,7 +233,8 @@ export default function AgenticOrchestrator() {
       scopes: scopes,
       geos: orchestratingProject?.geos || [],
       repo_url: orchestratingProject?.repo_url || '',
-      adapters: adapters
+      adapters: adapters,
+      uploaded_files: orchestratingProject?.uploaded_files || {}
     }).then(res => {
       setBackendResult(res);
     }).catch(err => {

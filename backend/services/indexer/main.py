@@ -34,6 +34,7 @@ class ProjectAnalyzeRequest(BaseModel):
     repo_url: Optional[str] = ""
     git_token: Optional[str] = ""
     adapters: Optional[dict] = {}
+    uploaded_files: Optional[dict] = {}
     telemetry_data: Optional[dict] = {}
 
 class ResolveGapRequest(BaseModel):
@@ -787,7 +788,8 @@ def analyze_project(req: ProjectAnalyzeRequest):
             scopes=req.scopes,
             geos=req.geos,
             adapters=req.adapters or {},
-            repo_url=req.repo_url or ""
+            repo_url=req.repo_url or "",
+            uploaded_files=req.uploaded_files or {}
         )
     except Exception as e:
         print(f"[projects/analyze] Specialized agent execution fallback: {e}")
@@ -821,6 +823,8 @@ def analyze_project(req: ProjectAnalyzeRequest):
         "kt_packs": artifacts["kt_packs"],
         "graph": artifacts["graph"],
         "orchestration_trace": artifacts.get("orchestration_trace", []),
+        "adapters": req.adapters or {},
+        "uploaded_files": req.uploaded_files or {},
         "telemetry": req.telemetry_data or {}
     }
     
@@ -1044,11 +1048,45 @@ def get_app_graph(app_id: str):
         except Exception as e:
             print(f"[get_app_graph] Neo4j query skipped or failed: {e}")
             
-    # 2. Fallback to project-cached synthesized knowledge graph
-    if app_id in reg and "graph" in reg[app_id]:
+    # 2. Check project-cached synthesized knowledge graph
+    if app_id in reg and "graph" in reg[app_id] and reg[app_id]["graph"].get("nodes"):
         return reg[app_id]["graph"]
         
-    return {"nodes": [], "links": []}
+    # 3. Generate on-the-fly hostile transition graph if missing
+    project_name = reg.get(app_id, {}).get("display_name", app_id.replace("_", " ").title())
+    t_type = reg.get(app_id, {}).get("transition_type", "it_application")
+    scopes = reg.get(app_id, {}).get("scopes", [])
+    geos = reg.get(app_id, {}).get("geos", [])
+    
+    try:
+        from transition_agents import run_specialized_agent_orchestration
+        artifacts = run_specialized_agent_orchestration(
+            project_id=app_id,
+            project_name=project_name,
+            transition_type=t_type,
+            scopes=scopes,
+            geos=geos,
+            adapters={}
+        )
+    except Exception as e:
+        print(f"[get_app_graph] Artifact generation fallback: {e}")
+        artifacts = generate_hostile_analysis_artifacts(
+            project_id=app_id,
+            project_name=project_name,
+            transition_type=t_type,
+            scopes=scopes,
+            geos=geos
+        )
+        
+    if app_id in reg:
+        reg[app_id]["graph"] = artifacts["graph"]
+        if not reg[app_id].get("gaps"):
+            reg[app_id]["gaps"] = artifacts["gaps"]
+        if not reg[app_id].get("kt_packs"):
+            reg[app_id]["kt_packs"] = artifacts["kt_packs"]
+        save_registry(reg)
+        
+    return artifacts["graph"]
 
 @app.get("/apps/{app_id}")
 def get_app(app_id: str):

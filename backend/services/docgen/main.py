@@ -14,6 +14,7 @@ QDRANT_URL = os.environ.get("QDRANT_URL", "http://qdrant:6333")
 QDRANT_API_KEY = os.environ.get("QDRANT_API_KEY", "")  # required for Qdrant Cloud
 PORT       = int(os.environ.get("PORT", "8002"))
 COLLECTION = "lumina_codebase"
+EMBED_DIM  = 1536
 
 oai    = OpenAI(api_key=OPENAI_KEY)
 qdrant = QdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY or None, timeout=60)
@@ -89,12 +90,20 @@ RUNBOOKS_COLL = "lumina_runbooks"
 
 def ensure_runbooks_collection():
     try:
-        from qdrant_client.models import Distance, VectorParams
+        from qdrant_client.models import Distance, VectorParams, PayloadSchemaType
         if not qdrant.collection_exists(RUNBOOKS_COLL):
             qdrant.create_collection(
                 collection_name=RUNBOOKS_COLL,
                 vectors_config=VectorParams(size=EMBED_DIM, distance=Distance.COSINE)
             )
+        try:
+            qdrant.create_payload_index(
+                collection_name=RUNBOOKS_COLL,
+                field_name="app_id",
+                field_schema=PayloadSchemaType.KEYWORD
+            )
+        except Exception:
+            pass
     except Exception as e:
         print(f"[docgen] Error ensuring runbooks collection: {e}")
 
