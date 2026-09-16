@@ -4,17 +4,14 @@ import { INDEXER_URL, getJson } from '../api.js';
 import DynamicTransitionInputs from './DynamicTransitionInputs.jsx';
 
 export default function TransitionLaunchpad() {
-  const { showLaunchpad, switchApp, setShowLaunchpad } = useApp();
+  const { showLaunchpad, switchApp, setShowLaunchpad, activeApp } = useApp();
   const [selectedType, setSelectedType] = useState(null); // 'it_application' | 'itis' | 'business_process'
   const [existingApps, setExistingApps] = useState([]);
   const [loadingApps, setLoadingApps] = useState(false);
 
   useEffect(() => {
-    if (showLaunchpad) {
-      loadExistingApps();
-      setSelectedType(null);
-    }
-  }, [showLaunchpad]);
+    loadExistingApps();
+  }, []);
 
   async function loadExistingApps() {
     setLoadingApps(true);
@@ -26,8 +23,6 @@ export default function TransitionLaunchpad() {
     }
     setLoadingApps(false);
   }
-
-  if (!showLaunchpad) return null;
 
   const transitionTypes = [
     {
@@ -72,40 +67,47 @@ export default function TransitionLaunchpad() {
   ];
 
   return (
-    <div id="wizard" style={{ zIndex: 9999 }}>
-      <div className="wiz-card" style={{ maxWidth: selectedType ? 860 : 1000, width: '95%' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <div>
-            <div className="wiz-logo" style={{ fontSize: 24 }}>
-              Lumina <span>Transition Assist</span>
-            </div>
-            <div className="wiz-sub" style={{ fontSize: 13, marginBottom: 20 }}>
-              Autonomous Hostile Transition Intelligence Platform
-            </div>
+    <div className="launchpad-page" style={{ minHeight: '100vh', background: 'var(--bg)', color: 'var(--tx)', display: 'flex', flexDirection: 'column' }}>
+      {/* Top Navigation Bar */}
+      <header style={{ borderBottom: '1px solid var(--bd)', background: 'var(--sf)', padding: '14px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <div className="wiz-logo" style={{ fontSize: 20, margin: 0 }}>
+            Lumina <span>Transition Assist</span>
           </div>
-          {existingApps.length > 0 && (
+          <span className="badge bbl" style={{ fontSize: 11, padding: '3px 8px' }}>
+            Autonomous Hostile Transition Platform
+          </span>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          {activeApp && (
             <button
-              className="btn bs"
+              className="btn bp"
               onClick={() => setShowLaunchpad(false)}
-              style={{ fontSize: 12, padding: '4px 10px' }}
+              style={{ fontSize: 12, padding: '6px 14px', display: 'flex', alignItems: 'center', gap: 6 }}
             >
-              ✕ Close
+              <span>Go to Active Dashboard ({activeApp.display_name || activeApp.repo_name}) →</span>
             </button>
           )}
         </div>
+      </header>
 
+      {/* Main Full-Page Content */}
+      <main style={{ flex: 1, maxWidth: 1140, width: '100%', margin: '0 auto', padding: '36px 24px 80px 24px' }}>
         {!selectedType ? (
           <div>
-            <div style={{ textAlign: 'center', marginBottom: 28 }}>
-              <div style={{ fontSize: 19, fontWeight: 700, color: 'var(--bl)', marginBottom: 8 }}>
+            {/* Hero Header */}
+            <div style={{ textAlign: 'center', marginBottom: 36 }}>
+              <div style={{ fontSize: 28, fontWeight: 800, color: '#ffffff', marginBottom: 10, letterSpacing: '-0.02em' }}>
                 Select Transition Project Type
               </div>
-              <div style={{ fontSize: 13, color: 'var(--mu)', maxWidth: 640, margin: '0 auto', lineHeight: 1.6 }}>
+              <div style={{ fontSize: 14, color: 'var(--mu)', maxWidth: 720, margin: '0 auto', lineHeight: 1.6 }}>
                 Every transition is assumed to be <strong>hostile</strong>: incumbent documentation is untrusted, CMDBs contain ghost assets, and ground truth must be reconstructed autonomously via parallel multi-agent telemetry analysis.
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 18, marginBottom: 30 }}>
+            {/* 3 Transition Type Cards */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 20, marginBottom: 44 }}>
               {transitionTypes.map(t => (
                 <div
                   key={t.id}
@@ -116,7 +118,7 @@ export default function TransitionLaunchpad() {
                     background: 'var(--sf2)',
                     border: '1px solid var(--bd)',
                     borderRadius: 12,
-                    padding: 20,
+                    padding: 24,
                     transition: 'all 0.2s ease',
                     display: 'flex',
                     flexDirection: 'column',
@@ -124,8 +126,8 @@ export default function TransitionLaunchpad() {
                   }}
                   onMouseEnter={e => {
                     e.currentTarget.style.borderColor = 'var(--bl)';
-                    e.currentTarget.style.transform = 'translateY(-2px)';
-                    e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.08)';
+                    e.currentTarget.style.transform = 'translateY(-3px)';
+                    e.currentTarget.style.boxShadow = '0 12px 30px rgba(0,0,0,0.2)';
                   }}
                   onMouseLeave={e => {
                     e.currentTarget.style.borderColor = 'var(--bd)';
@@ -134,58 +136,85 @@ export default function TransitionLaunchpad() {
                   }}
                 >
                   <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                      <span style={{ fontSize: 28 }}>{t.icon}</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                      <span style={{ fontSize: 32 }}>{t.icon}</span>
                       <span className={`badge ${t.badgeClass}`}>{t.badge}</span>
                     </div>
-                    <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--bl)', marginBottom: 8 }}>
+                    <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--bl)', marginBottom: 10 }}>
                       {t.title}
                     </div>
-                    <div style={{ fontSize: 12, color: 'var(--mu)', lineHeight: 1.6, marginBottom: 14 }}>
+                    <div style={{ fontSize: 13, color: 'var(--mu)', lineHeight: 1.6, marginBottom: 18 }}>
                       {t.summary}
                     </div>
-                    <div style={{ borderTop: '1px solid var(--bd)', paddingTop: 12 }}>
+                    <div style={{ borderTop: '1px solid var(--bd)', paddingTop: 14 }}>
                       {t.highlights.map((h, i) => (
-                        <div key={i} style={{ fontSize: 11, color: 'var(--tx)', display: 'flex', gap: 6, marginBottom: 6, lineHeight: 1.4 }}>
+                        <div key={i} style={{ fontSize: 12, color: 'var(--tx)', display: 'flex', gap: 8, marginBottom: 8, lineHeight: 1.4 }}>
                           <span style={{ color: 'var(--bl)', fontWeight: 700 }}>›</span>
                           <span>{h}</span>
                         </div>
                       ))}
                     </div>
                   </div>
-                  <div style={{ marginTop: 16, textAlign: 'right' }}>
-                    <span className="btn bp" style={{ fontSize: 12, padding: '6px 14px', width: '100%', display: 'inline-block', textAlign: 'center' }}>
-                      Configure Project →
-                    </span>
+                  <div style={{ marginTop: 20 }}>
+                    <button className="btn bp" style={{ fontSize: 13, padding: '9px 16px', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 6 }}>
+                      <span>Configure {t.title.split(' ')[0]} Scope &amp; Adapters →</span>
+                    </button>
                   </div>
                 </div>
               ))}
             </div>
 
-            {/* Previously Analyzed Projects */}
+            {/* Previously Analyzed Projects List */}
             {existingApps.length > 0 && (
-              <div style={{ borderTop: '1px solid var(--bd)', paddingTop: 20 }}>
-                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--mu)', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span>Previously Analyzed Projects</span>
-                  <span className="badge btl2">{existingApps.length} active</span>
+              <div style={{ borderTop: '1px solid var(--bd)', paddingTop: 28 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: '#ffffff', display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span>Previously Analyzed Transition Projects</span>
+                    <span className="badge btl2">{existingApps.length} active</span>
+                  </div>
+                  <span style={{ fontSize: 12, color: 'var(--mu)' }}>Click any project to inspect knowledge fabric</span>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 10 }}>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 14 }}>
                   {existingApps.map(a => {
-                    const typeLabel = a.transition_type === 'itis' ? 'ITIS' : a.transition_type === 'business_process' ? 'BPS' : 'App';
+                    const typeLabel = a.transition_type === 'itis' ? 'ITIS' : a.transition_type === 'business_process' ? 'BPS' : 'Application';
                     const badgeClass = a.transition_type === 'itis' ? 'bgr' : a.transition_type === 'business_process' ? 'bor' : 'bbl';
                     return (
                       <div
                         key={a.app_id || a.project_id}
-                        className="app-chip"
+                        className="card"
                         onClick={() => switchApp(a)}
-                        style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', padding: 10 }}
+                        style={{
+                          cursor: 'pointer',
+                          padding: '14px 16px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: 6,
+                          background: 'var(--sf)',
+                          border: '1px solid var(--bd)',
+                          borderRadius: 8,
+                          transition: 'all 0.15s ease'
+                        }}
+                        onMouseEnter={e => {
+                          e.currentTarget.style.borderColor = 'var(--bl)';
+                          e.currentTarget.style.transform = 'translateY(-2px)';
+                        }}
+                        onMouseLeave={e => {
+                          e.currentTarget.style.borderColor = 'var(--bd)';
+                          e.currentTarget.style.transform = 'none';
+                        }}
                       >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center', marginBottom: 4 }}>
-                          <div className="app-chip-name" style={{ fontWeight: 600 }}>{a.display_name || a.repo_name}</div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--bl)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {a.display_name || a.repo_name}
+                          </div>
                           <span className={`badge ${badgeClass}`} style={{ fontSize: 9 }}>{typeLabel}</span>
                         </div>
-                        <div className="app-chip-meta" style={{ fontSize: 11 }}>
+                        <div style={{ fontSize: 11, color: 'var(--mu)' }}>
                           {a.files ? `${a.files} components` : 'Indexed'} · {a.indexed_at ? new Date(a.indexed_at).toLocaleDateString() : 'Active'}
+                        </div>
+                        <div style={{ fontSize: 11, color: '#38d9a9', fontWeight: 600, marginTop: 4 }}>
+                          Open Dashboard →
                         </div>
                       </div>
                     );
@@ -195,12 +224,32 @@ export default function TransitionLaunchpad() {
             )}
           </div>
         ) : (
-          <DynamicTransitionInputs
-            transitionType={selectedType}
-            onBack={() => setSelectedType(null)}
-          />
+          /* Step 2: Full Page Configuration */
+          <div>
+            {/* Breadcrumb / Back Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+              <button
+                className="btn bs"
+                onClick={() => setSelectedType(null)}
+                style={{ fontSize: 12, padding: '6px 14px', display: 'flex', alignItems: 'center', gap: 6 }}
+              >
+                <span>← Back to Project Types</span>
+              </button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 12, color: 'var(--mu)' }}>Configuring:</span>
+                <span className={`badge ${transitionTypes.find(t => t.id === selectedType)?.badgeClass}`}>
+                  {transitionTypes.find(t => t.id === selectedType)?.title}
+                </span>
+              </div>
+            </div>
+
+            <DynamicTransitionInputs
+              transitionType={selectedType}
+              onBack={() => setSelectedType(null)}
+            />
+          </div>
         )}
-      </div>
+      </main>
     </div>
   );
 }

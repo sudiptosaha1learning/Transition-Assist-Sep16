@@ -482,28 +482,29 @@ export default function AgenticOrchestrator() {
   const activeAgent = agents.find(a => a.id === selectedAgentId) || agents[0];
 
   return (
-    <div id="wizard" style={{ zIndex: 10000, background: 'rgba(7, 10, 19, 0.96)', backdropFilter: 'blur(10px)' }}>
-      <div className="wiz-card" style={{ maxWidth: 1060, width: '96%', background: '#0b1324', border: '1px solid #1e293b', maxHeight: '92vh', overflowY: 'auto' }}>
-        
-        {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-          <div>
-            <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--bl)', textTransform: 'uppercase', letterSpacing: '0.09em' }}>
-              Hostile Transition Multi-Agent Orchestrator
-            </div>
-            <div style={{ fontSize: 20, fontWeight: 800, color: '#ffffff', marginTop: 2 }}>
-              {projectName}
-            </div>
+    <div className="orchestrator-page" style={{ minHeight: '100vh', background: '#070c18', color: '#e2e8f0', display: 'flex', flexDirection: 'column' }}>
+      {/* Top Navbar */}
+      <header style={{ borderBottom: '1px solid #1e293b', background: '#0b1324', padding: '16px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--bl)', textTransform: 'uppercase', letterSpacing: '0.09em' }}>
+            Hostile Transition Multi-Agent Orchestrator
           </div>
-          <div style={{ textAlign: 'right' }}>
-            <span className="badge bbl" style={{ fontSize: 11, padding: '5px 12px' }}>
-              {transitionType === 'itis' ? 'ITIS Multi-Tower Engine' : transitionType === 'business_process' ? 'BPS Process Mining Engine' : 'Application Engine'}
-            </span>
-            <div style={{ fontSize: 13, fontWeight: 700, color: '#4dabf7', marginTop: 4 }}>
-              {phase}% Converged
-            </div>
+          <div style={{ fontSize: 22, fontWeight: 800, color: '#ffffff', marginTop: 2 }}>
+            {projectName}
           </div>
         </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <span className="badge bbl" style={{ fontSize: 12, padding: '5px 14px' }}>
+            {transitionType === 'itis' ? 'ITIS Multi-Tower Engine' : transitionType === 'business_process' ? 'BPS Process Mining Engine' : 'Application Engine'}
+          </span>
+          <div style={{ fontSize: 15, fontWeight: 700, color: '#4dabf7' }}>
+            {phase}% Converged
+          </div>
+        </div>
+      </header>
+
+      {/* Main Page Area */}
+      <main style={{ flex: 1, maxWidth: 1240, width: '100%', margin: '0 auto', padding: '24px 24px 60px 24px' }}>
 
         {/* Progress Bar */}
         <div className="prog-wrap" style={{ marginBottom: 16 }}>
@@ -628,7 +629,36 @@ export default function AgenticOrchestrator() {
           </div>
         )}
 
-      </div>
+        {/* Completion CTA */}
+        {phase >= 100 && (
+          <div style={{ marginTop: 20, textAlign: 'center' }}>
+            <button
+              className="btn bp"
+              onClick={() => {
+                if (backendResult) {
+                  enterPlatform(backendResult);
+                } else {
+                  enterPlatform({
+                    app_id: projectName.toLowerCase().replace(/[^a-z0-9]/g, '_'),
+                    project_id: projectName.toLowerCase().replace(/[^a-z0-9]/g, '_'),
+                    display_name: projectName,
+                    repo_name: projectName,
+                    transition_type: transitionType,
+                    scopes: scopes,
+                    geos: orchestratingProject?.geos || [],
+                    files: nodesRef.current.length * 3,
+                    chunks: nodesRef.current.length * 15
+                  });
+                }
+              }}
+              style={{ fontSize: 14, padding: '12px 28px', fontWeight: 700 }}
+            >
+              🚀 Explore Knowledge Fabric &amp; Transition Dashboard →
+            </button>
+          </div>
+        )}
+
+      </main>
     </div>
   );
 }

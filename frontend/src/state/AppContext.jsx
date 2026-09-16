@@ -8,7 +8,7 @@ export function AppProvider({ children }) {
   // `currentProvider`, `geminiKey`, `openaiKeyOverride`, plus whether the
   // wizard is showing and which nav item is unlocked/active.
   const [activeApp, setActiveApp] = useState(null); // {app_id, display_name, repo_name, repo_url, files, chunks}
-  const [showWizard, setShowWizard] = useState(true);
+  const [showWizard, setShowWizard] = useState(false);
   const [unlocked, setUnlocked] = useState(false);
   const [scene, setScene] = useState('overview');
 
@@ -108,8 +108,8 @@ export function AppProvider({ children }) {
   }, [activeApp]);
 
   const openWizard = useCallback(() => {
-    setShowWizard(true);
-    setShowLaunchpad(false);
+    setShowLaunchpad(true);
+    setShowWizard(false);
   }, []);
 
   useEffect(() => {
@@ -122,22 +122,14 @@ export function AppProvider({ children }) {
         const apps = d.apps || [];
         if (apps.length > 0) {
           let targetApp = apps.find(a => (a.app_id === lastActiveId || a.project_id === lastActiveId));
-          if (!targetApp) {
-            targetApp = apps[0];
+          if (targetApp) {
+            setActiveApp(targetApp);
           }
-          // Activate the app on the backend indexer
-          try {
-            await fetch(`${INDEXER_URL}/apps/${targetApp.app_id || targetApp.project_id}/activate`, { method: 'POST' });
-          } catch (err) {
-            console.error("Failed to activate app on backend:", err);
-          }
-          setActiveApp(targetApp);
-          setUnlocked(true);
-          setShowWizard(false);
-          setShowLaunchpad(false);
+          // Do NOT auto-dismiss showLaunchpad. User explicitly requested
+          // to always land on the transition selection/configuration page.
         }
       } catch (err) {
-        console.error("Error auto-loading apps:", err);
+        console.error("Error loading apps in background:", err);
       }
     }
     autoLoad();
