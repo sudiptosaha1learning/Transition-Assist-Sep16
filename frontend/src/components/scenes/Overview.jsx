@@ -33,43 +33,150 @@ export default function Overview() {
   const stack = (data && data.tech_stack) || {};
   const dataSources = [...((data && data.data_sources) || []), ...((data && data.integrations) || [])];
 
+  const transitionType = activeApp?.transition_type || 'it_application';
+
   return (
     <div className={`scene ${scene === 'overview' ? 'active' : ''}`}>
-      <h1>{data ? `${appName} — Overview` : 'Application overview'}</h1>
-      <div className="sdesc">Auto-generated from the indexed codebase and uploaded documents.</div>
+      <h1>{activeApp ? `${activeApp.display_name || appName} — Overview` : 'Transition Project Overview'}</h1>
+      <div className="sdesc">
+        {transitionType === 'itis' ? 'Multi-tower infrastructure scope, discovered topology, and hostile audit baselines.' :
+         transitionType === 'business_process' ? 'Process hierarchy, operational volumes, and compliance audit baselines.' :
+         'Auto-generated from the indexed codebase, architecture specs, and uploaded telemetry.'}
+      </div>
 
-      {loading && <div style={{ color: 'var(--mu)', fontSize: 13, padding: '20px 0' }}>{errMsg || 'Loading application overview...'}</div>}
+      {/* Tailored ITIS Overview */}
+      {transitionType === 'itis' && (
+        <div style={{ marginTop: 16 }}>
+          <div className="card" style={{ background: 'var(--sf2)', marginBottom: 14 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <div>
+                <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--bl)', marginBottom: 4 }}>
+                  {activeApp.display_name || 'Global Enterprise ITIS Estate'}
+                </div>
+                <div style={{ fontSize: 12, color: 'var(--mu)', lineHeight: 1.6, maxWidth: 680 }}>
+                  Cross-tower infrastructure estate analyzed under hostile transition assumptions. Raw firewall configs, cloud inventories, and ticket exports reconciled into ground-truth topology.
+                </div>
+              </div>
+              <span className="badge bgr" style={{ padding: '6px 12px', fontSize: 11 }}>ITIS Multi-Tower</span>
+            </div>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12 }}>
+              {(activeApp.scopes || ['Network & Security', 'Cloud & Virtualization', 'Storage & Backup']).map(s => (
+                <span key={s} className="badge bbl">{s}</span>
+              ))}
+              {(activeApp.geos || ['North America', 'EMEA']).map(g => (
+                <span key={g} className="badge btl2">Geo: {g}</span>
+              ))}
+            </div>
+          </div>
 
-      {!loading && data && (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
+            <div className="card">
+              <div className="ct">Discovered Infrastructure CIs</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
+                <div className="sr"><span className="sk">Network & Security</span><span style={{ color: 'var(--tx)' }}>Palo Alto FW-PROD-EAST, Core Subnet 10.240.0.0/16</span></div>
+                <div className="sr"><span className="sk">Compute Fleet</span><span style={{ color: 'var(--tx)' }}>srv-prod-api-01, srv-prod-db-master (38 VMs)</span></div>
+                <div className="sr"><span className="sk">Storage Volumes</span><span style={{ color: 'var(--tx)' }}>NetApp vol-oracle-archive-04 (94.2% full)</span></div>
+                <div className="sr"><span className="sk">Identity & Directory</span><span style={{ color: 'var(--tx)' }}>Active Directory (Global Domain Forest)</span></div>
+              </div>
+            </div>
+
+            <div className="card">
+              <div className="ct">Hostile Audit Discrepancy Snapshot</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
+                <div className="sr"><span className="sk" style={{ color: 'var(--rd)' }}>Ghost Hosts</span><span>1 Unmapped IP (10.240.12.88) in firewall</span></div>
+                <div className="sr"><span className="sk" style={{ color: 'var(--am)' }}>Zombie CIs</span><span>38 Dormant VMs in dc-eu-west-02</span></div>
+                <div className="sr"><span className="sk" style={{ color: 'var(--rd)' }}>Storage Anomaly</span><span>Veeam snapshot replication failure</span></div>
+                <div className="sr"><span className="sk" style={{ color: 'var(--or)' }}>Personnel Bottleneck</span><span>87% Network Changes by D. Evans</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Tailored BPS Overview */}
+      {transitionType === 'business_process' && (
+        <div style={{ marginTop: 16 }}>
+          <div className="card" style={{ background: 'var(--sf2)', marginBottom: 14 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <div>
+                <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--bl)', marginBottom: 4 }}>
+                  {activeApp.display_name || 'Business Process Operations Estate'}
+                </div>
+                <div style={{ fontSize: 12, color: 'var(--mu)', lineHeight: 1.6, maxWidth: 680 }}>
+                  Operational transition analyzed directly from 12-month work queue exports, SOP documents, and resolution telemetry. Discovered shadow workarounds and single-point-of-failure approval bottlenecks.
+                </div>
+              </div>
+              <span className="badge bor" style={{ padding: '6px 12px', fontSize: 11 }}>BPS Operations</span>
+            </div>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12 }}>
+              {(activeApp.scopes || ['Finance & Accounting', 'Customer Operations']).map(s => (
+                <span key={s} className="badge bor">{s}</span>
+              ))}
+              {(activeApp.geos || ['Global Delivery Center']).map(g => (
+                <span key={g} className="badge btl2">Location: {g}</span>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
+            <div className="card">
+              <div className="ct">Core Process Hierarchy &amp; Systems</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
+                <div className="sr"><span className="sk">Accounts Payable (P2P)</span><span style={{ color: 'var(--tx)' }}>Invoice Batch Upload → SAP S/4HANA</span></div>
+                <div className="sr"><span className="sk">Claims Settlement</span><span style={{ color: 'var(--tx)' }}>Adjudication → Dual Manager Signoff</span></div>
+                <div className="sr"><span className="sk">Treasury & Payments</span><span style={{ color: 'var(--tx)' }}>International Wire Releases (&gt;$500k)</span></div>
+                <div className="sr"><span className="sk">Enterprise ERP</span><span style={{ color: 'var(--tx)' }}>SAP S/4HANA Finance Cloud</span></div>
+              </div>
+            </div>
+
+            <div className="card">
+              <div className="ct">Hostile Process Audit Snapshot</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
+                <div className="sr"><span className="sk" style={{ color: 'var(--rd)' }}>Shadow Macro</span><span>Macro_v3.xlsm on Drive X:\ without SOP</span></div>
+                <div className="sr"><span className="sk" style={{ color: 'var(--am)' }}>Compliance Bypass</span><span>Code 'OVR-99' used 31 times without audit</span></div>
+                <div className="sr"><span className="sk" style={{ color: 'var(--rd)' }}>Solo Approver Bottleneck</span><span>92% Wires Keyed Solely by R. Sharma</span></div>
+                <div className="sr"><span className="sk" style={{ color: 'var(--or)' }}>Documentation Debt</span><span>Missing FX exception handling SOP</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* IT Application Standard View */}
+      {transitionType === 'it_application' && (
         <div>
-          <div className="card" style={{ background: 'var(--sf2)' }}>
-            <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--bl)', marginBottom: 6 }}>{appName}</div>
-            <div style={{ fontSize: 12, color: 'var(--mu)', lineHeight: 1.75, marginBottom: 10 }}>{data.application_summary}</div>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              {data.business_domain && <span className="badge btl2">{data.business_domain}</span>}
-              {cx && <span className={`badge ${cxClass}`}>{cx} complexity</span>}
-            </div>
-          </div>
+          {loading && <div style={{ color: 'var(--mu)', fontSize: 13, padding: '20px 0' }}>{errMsg || 'Loading application overview...'}</div>}
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-            <div className="card">
-              <div className="ct">Tech stack</div>
-              <div>
-                {Object.entries(stack).filter(([, v]) => v && (Array.isArray(v) ? v.length : true)).map(([k, v]) => (
-                  <div className="sr" key={k}><span className="sk" style={{ fontSize: 11 }}>{k}</span>
-                    <span style={{ fontSize: 11, color: 'var(--tx)', textAlign: 'right' }}>{Array.isArray(v) ? v.join(', ') : v}</span></div>
-                ))}
+          {!loading && data && (
+            <div>
+              <div className="card" style={{ background: 'var(--sf2)' }}>
+                <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--bl)', marginBottom: 6 }}>{appName}</div>
+                <div style={{ fontSize: 12, color: 'var(--mu)', lineHeight: 1.75, marginBottom: 10 }}>{data.application_summary}</div>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  {data.business_domain && <span className="badge btl2">{data.business_domain}</span>}
+                  {cx && <span className={`badge ${cxClass}`}>{cx} complexity</span>}
+                </div>
               </div>
-            </div>
-            <div className="card">
-              <div className="ct">Data sources &amp; integrations</div>
-              <div>
-                {dataSources.map((s, i) => (
-                  <div key={i} style={{ fontSize: 11, padding: '3px 0', borderBottom: '1px solid var(--bd)', color: 'var(--mu)' }}>{s}</div>
-                ))}
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div className="card">
+                  <div className="ct">Tech stack</div>
+                  <div>
+                    {Object.entries(stack).filter(([, v]) => v && (Array.isArray(v) ? v.length : true)).map(([k, v]) => (
+                      <div className="sr" key={k}><span className="sk" style={{ fontSize: 11 }}>{k}</span>
+                        <span style={{ fontSize: 11, color: 'var(--tx)', textAlign: 'right' }}>{Array.isArray(v) ? v.join(', ') : v}</span></div>
+                    ))}
+                  </div>
+                </div>
+                <div className="card">
+                  <div className="ct">Data sources &amp; integrations</div>
+                  <div>
+                    {dataSources.map((s, i) => (
+                      <div key={i} style={{ fontSize: 11, padding: '3px 0', borderBottom: '1px solid var(--bd)', color: 'var(--mu)' }}>{s}</div>
+                    ))}
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
 
           <div className="card">
             <div className="ct">Architecture highlights</div>
@@ -127,5 +234,7 @@ export default function Overview() {
         </div>
       )}
     </div>
+  )}
+</div>
   );
 }

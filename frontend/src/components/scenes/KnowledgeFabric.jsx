@@ -159,14 +159,28 @@ export default function KnowledgeFabric() {
       });
 
       nodes.forEach(n => {
-        ctx.beginPath();
-        ctx.arc(n.x, n.y, n.radius, 0, 2 * Math.PI);
-        
         let color = '#4cc9f0'; 
         if (n.label === 'Repo') color = '#7209b7'; 
-        if (n.label === 'Library') color = '#f77f00'; 
+        else if (n.label === 'Discrepancy') color = '#ff6b6b';
+        else if (n.label === 'Verified') color = '#2ecc71';
+        else if (n.label === 'SME') color = '#fcc419';
+        else if (n.label === 'Network') color = '#20c997';
+        else if (n.label === 'Library') color = '#f77f00';
 
+        // Bloom Radial Glow
+        const grad = ctx.createRadialGradient(n.x, n.y, n.radius * 0.4, n.x, n.y, n.radius * 2.4);
+        grad.addColorStop(0, color);
+        grad.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, n.radius * 2.4, 0, 2 * Math.PI);
+        ctx.fill();
+
+        // Node Core
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, n.radius, 0, 2 * Math.PI);
         ctx.fillStyle = color;
+
         const isHovered = hoveredNode && hoveredNode.id === n.id;
         const isSelected = selectedNode && selectedNode.id === n.id;
         
@@ -175,18 +189,18 @@ export default function KnowledgeFabric() {
           ctx.lineWidth = 3;
           ctx.stroke();
         } else if (isHovered) {
-          ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+          ctx.strokeStyle = 'rgba(255,255,255,0.85)';
           ctx.lineWidth = 2;
           ctx.stroke();
         }
 
         ctx.fill();
 
-        if (n.label === 'Repo' || isHovered || isSelected) {
+        if (n.label === 'Repo' || n.label === 'Discrepancy' || isHovered || isSelected) {
           ctx.fillStyle = '#ffffff';
           ctx.font = isHovered || isSelected ? 'bold 11px sans-serif' : '9px sans-serif';
           ctx.textAlign = 'center';
-          ctx.fillText(n.name, n.x, n.y - n.radius - 5);
+          ctx.fillText(n.name, n.x, n.y - n.radius - 6);
         }
       });
 
@@ -310,18 +324,30 @@ export default function KnowledgeFabric() {
             flexDirection: 'column',
             gap: 6
           }}>
-            <div style={{ fontSize: 10, fontWeight: 'bold', color: 'var(--mu)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Legend</div>
+            <div style={{ fontSize: 10, fontWeight: 'bold', color: 'var(--mu)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Legend &amp; Bloom Topology</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11 }}>
               <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#7209b7' }} />
-              <span>Repository ({graphData.nodes.filter(n=>n.label==='Repo').length})</span>
+              <span>Project Root ({graphData.nodes.filter(n=>n.label==='Repo').length})</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11 }}>
+              <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#ff6b6b' }} />
+              <span style={{ color: '#ff6b6b', fontWeight: 600 }}>Ghost / Discrepancy ({graphData.nodes.filter(n=>n.label==='Discrepancy').length})</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11 }}>
+              <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#2ecc71' }} />
+              <span style={{ color: '#2ecc71', fontWeight: 600 }}>Verified Ground Truth ({graphData.nodes.filter(n=>n.label==='Verified').length})</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11 }}>
               <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#4cc9f0' }} />
-              <span>Source Files ({graphData.nodes.filter(n=>n.label==='File').length})</span>
+              <span>Files / Compute ({graphData.nodes.filter(n=>n.label==='File').length})</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11 }}>
-              <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#f77f00' }} />
-              <span>Dependencies ({graphData.nodes.filter(n=>n.label==='Library').length})</span>
+              <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#20c997' }} />
+              <span>Network / Towers ({graphData.nodes.filter(n=>n.label==='Network').length})</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11 }}>
+              <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#fcc419' }} />
+              <span>SMEs &amp; Signoffs ({graphData.nodes.filter(n=>n.label==='SME').length})</span>
             </div>
           </div>
 

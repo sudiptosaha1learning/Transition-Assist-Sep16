@@ -38,7 +38,7 @@ const GEMINI_GROUPS = [
 
 export default function Header() {
   const {
-    activeApp, openWizard, switchApp,
+    activeApp, openWizard, openLaunchpad, switchApp,
     currentModel, currentProvider, setCurrentModel, setCurrentProvider,
     geminiKey, openaiKeyOverride, setGeminiKey, setOpenaiKeyOverride,
   } = useApp();
@@ -89,19 +89,19 @@ export default function Header() {
 
   function triggerReindex() {
     if (!activeApp) return;
-    if (!confirm(`Re-index ${activeApp.display_name || activeApp.repo_name}? This will refresh all intelligence for this application.`)) return;
-    openWizard();
+    if (!confirm(`Re-index ${activeApp.display_name || activeApp.repo_name}? This will refresh all intelligence for this project.`)) return;
+    openLaunchpad();
   }
 
   async function deleteAppClick(appId, displayName, e) {
     e.stopPropagation();
-    if (!confirm(`Are you sure you want to delete "${displayName}"? This will permanently erase the application and all its related codebase indexes, uploaded documents, and generated runbooks.`)) return;
+    if (!confirm(`Are you sure you want to delete "${displayName}"? This will permanently erase the project and all its related codebase indexes, uploaded documents, and generated runbooks.`)) return;
     try {
       const r = await fetch(`${INDEXER_URL}/apps/${appId}`, { method: 'DELETE' });
       if (!r.ok) throw new Error(await r.text());
       
-      if (activeApp && activeApp.app_id === appId) {
-        const remaining = apps.filter(a => a.app_id !== appId);
+      if (activeApp && (activeApp.app_id === appId || activeApp.project_id === appId)) {
+        const remaining = apps.filter(a => a.app_id !== appId && a.project_id !== appId);
         if (remaining.length > 0) {
           switchApp(remaining[0]);
         } else {
@@ -115,49 +115,66 @@ export default function Header() {
     }
   }
 
+  const activeType = activeApp?.transition_type || 'it_application';
+  const typeBadge = activeType === 'itis' ? 'ITIS' : activeType === 'business_process' ? 'BPS' : 'App';
+  const typeBadgeClass = activeType === 'itis' ? 'bgr' : activeType === 'business_process' ? 'bor' : 'bbl';
+
   return (
     <header ref={rootRef}>
-      <div className="logo">Lumina <span>Transition</span></div>
+      <div className="logo" onClick={openLaunchpad} style={{ cursor: 'pointer' }}>
+        Lumina <span>Transition</span>
+      </div>
       <div className="app-switcher" onClick={() => setDropdownOpen(o => !o)}>
         <div className="app-dot" />
-        <div className="app-name-display">{activeApp ? (activeApp.display_name || activeApp.repo_name) : 'No app selected'}</div>
+        <div className="app-name-display">{activeApp ? (activeApp.display_name || activeApp.repo_name) : 'No project selected'}</div>
+        {activeApp && <span className={`badge ${typeBadgeClass}`} style={{ fontSize: 9, padding: '2px 6px', marginLeft: 4 }}>{typeBadge}</span>}
         <div className="app-caret">▾</div>
       </div>
-      <div className="app-count">{apps.length} app{apps.length !== 1 ? 's' : ''}</div>
-      <button className="reindex-btn" onClick={triggerReindex}>↻ Re-index</button>
+      <div className="app-count">{apps.length} project{apps.length !== 1 ? 's' : ''}</div>
+      <button className="reindex-btn" onClick={openLaunchpad} style={{ background: 'var(--bl2)', color: 'var(--bl)', borderColor: 'var(--bl)' }}>
+        + New Transition
+      </button>
 
       <div className={`app-dropdown ${dropdownOpen ? 'open' : ''}`}>
         <div>
-          {apps.map(a => (
-            <div key={a.app_id} className={`dd-item ${activeApp && activeApp.app_id === a.app_id ? 'dd-active' : ''}`}
-              style={{ position: 'relative', paddingRight: 35 }}
-              onClick={() => { setDropdownOpen(false); switchApp({ app_id: a.app_id, display_name: a.display_name || a.repo_name, repo_url: a.repo_url, repo_name: a.display_name || a.repo_name, files: a.files, chunks: a.chunks }); }}>
-              <div className="dd-name">{a.display_name || a.repo_name}</div>
-              <div className="dd-meta">{a.files} files · indexed {a.indexed_at ? new Date(a.indexed_at).toLocaleDateString() : ''}</div>
-              <button
-                onClick={(e) => deleteAppClick(a.app_id, a.display_name || a.repo_name, e)}
-                style={{
-                  position: 'absolute',
-                  right: 8,
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  background: 'none',
-                  border: 'none',
-                  color: 'var(--rd)',
-                  fontSize: 16,
-                  cursor: 'pointer',
-                  opacity: 0.6,
-                  padding: '4px 6px',
-                  fontWeight: 'bold'
-                }}
-                title="Delete application"
-              >
-                ×
-              </button>
-            </div>
-          ))}
+          {apps.map(a => {
+            const isCurrent = activeApp && (activeApp.app_id === a.app_id || activeApp.project_id === a.app_id);
+            const aType = a.transition_type === 'itis' ? 'ITIS' : a.transition_type === 'business_process' ? 'BPS' : 'App';
+            const aClass = a.transition_type === 'itis' ? 'bgr' : a.transition_type === 'business_process' ? 'bor' : 'bbl';
+            return (
+              <div key={a.app_id} className={`dd-item ${isCurrent ? 'dd-active' : ''}`}
+                style={{ position: 'relative', paddingRight: 35 }}
+                onClick={() => { setDropdownOpen(false); switchApp(a); }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
+                  <div className="dd-name">{a.display_name || a.repo_name}</div>
+                  <span className={`badge ${aClass}`} style={{ fontSize: 9 }}>{aType}</span>
+                </div>
+                <div className="dd-meta">{a.files} components · indexed {a.indexed_at ? new Date(a.indexed_at).toLocaleDateString() : 'Active'}</div>
+                <button
+                  onClick={(e) => deleteAppClick(a.app_id, a.display_name || a.repo_name, e)}
+                  style={{
+                    position: 'absolute',
+                    right: 8,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'none',
+                    border: 'none',
+                    color: 'var(--rd)',
+                    fontSize: 16,
+                    cursor: 'pointer',
+                    opacity: 0.6,
+                    padding: '4px 6px',
+                    fontWeight: 'bold'
+                  }}
+                  title="Delete project"
+                >
+                  ×
+                </button>
+              </div>
+            );
+          })}
         </div>
-        <div className="add-app-row" onClick={() => { setDropdownOpen(false); openWizard(); }}>+ Add new application</div>
+        <div className="add-app-row" onClick={() => { setDropdownOpen(false); openLaunchpad(); }}>+ New Transition Project</div>
       </div>
 
       <div style={{ position: 'relative' }}>
