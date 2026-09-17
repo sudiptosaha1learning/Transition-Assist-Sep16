@@ -3,7 +3,7 @@ import { useApp } from '../../state/AppContext.jsx';
 import { CODEINTEL_URL, getJson } from '../../api.js';
 
 export default function Overview() {
-  const { activeApp, scene } = useApp();
+  const { activeApp, scene, setScene } = useApp();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState(null);
   const [errMsg, setErrMsg] = useState('');
@@ -42,6 +42,39 @@ export default function Overview() {
         {transitionType === 'itis' ? 'Multi-tower infrastructure scope, discovered topology, and hostile audit baselines.' :
          transitionType === 'business_process' ? 'Process hierarchy, operational volumes, and compliance audit baselines.' :
          'Auto-generated from the indexed codebase, architecture specs, and uploaded telemetry.'}
+      </div>
+
+      {/* Control Tower Flight Simulator Banner */}
+      <div style={{
+        marginTop: 14,
+        marginBottom: 16,
+        padding: '12px 18px',
+        borderRadius: 8,
+        background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(59, 130, 246, 0.06) 100%)',
+        border: '1px solid rgba(245, 158, 11, 0.25)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 12
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span style={{ fontSize: 20 }}>🕹️</span>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: '#f8fafc' }}>
+              Transition Control Tower & Pre-Flight Simulator Active
+            </div>
+            <div style={{ fontSize: 11, color: 'var(--mu)' }}>
+              Explore 9-week timeline compression (180d to 56d), Neo4j Bloom glowing dependency topology, readiness matrix, and SME interview queues.
+            </div>
+          </div>
+        </div>
+        <button
+          className="btn bp"
+          onClick={() => setScene('control_tower')}
+          style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', color: '#090d16', fontWeight: 700, border: 'none', padding: '6px 14px', fontSize: 11, cursor: 'pointer', borderRadius: 5, whiteSpace: 'nowrap' }}
+        >
+          Open Control Tower →
+        </button>
       </div>
 
       {/* Tailored ITIS Overview */}

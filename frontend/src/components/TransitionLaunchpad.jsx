@@ -4,7 +4,7 @@ import { INDEXER_URL, getJson } from '../api.js';
 import DynamicTransitionInputs from './DynamicTransitionInputs.jsx';
 
 export default function TransitionLaunchpad() {
-  const { showLaunchpad, switchApp, setShowLaunchpad, activeApp } = useApp();
+  const { showLaunchpad, switchApp, setShowLaunchpad, activeApp, openControlTowerSimulator } = useApp();
   const [selectedType, setSelectedType] = useState(null); // 'it_application' | 'itis' | 'business_process'
   const [existingApps, setExistingApps] = useState([]);
   const [loadingApps, setLoadingApps] = useState(false);
@@ -28,35 +28,38 @@ export default function TransitionLaunchpad() {
     {
       id: 'it_application',
       title: 'IT Application Transition',
-      badge: 'Codebase & Architecture',
+      badge: 'Code + Architecture + DB',
+      badgeColor: 'bbl',
       badgeClass: 'bbl',
-      icon: '⚡',
-      summary: 'Analyze custom application repositories, monolithic services, microservices, and databases under hostile handover conditions.',
+      icon: '💻',
+      summary: 'Automated reverse-engineering of application source repositories, service tiers, dark endpoints, and incident runbooks.',
       highlights: [
-        'Multi-repo Git parsing (GitHub, Azure DevOps, GitLab, Bitbucket)',
-        'AST code intelligence, hidden dependencies & external webhooks',
-        'Automated Runbook generation & incident playbooks'
+        'GitHub / GitLab / Bitbucket deep AST repository ingestion',
+        '7-Tier Service architecture, database, API and queue discovery',
+        'SPOF maintainer graph & automated runbook reconstruction'
       ]
     },
     {
       id: 'itis',
       title: 'IT Infrastructure Services (ITIS)',
-      badge: 'Towers & Telemetry',
-      badgeClass: 'bgr',
-      icon: '🛡️',
-      summary: 'Multi-tower infrastructure transition across Network, Cloud, Storage, Datacenter, and Service Desk environments.',
+      badge: 'Networks + Compute + Cloud',
+      badgeColor: 'bam',
+      badgeClass: 'bam',
+      icon: '🏢',
+      summary: 'Telemetry-first discovery across Service Desk, Network Topology, Hybrid Data Centers, Cloud Tenancies, and Storage arrays.',
       highlights: [
-        'Ghost asset & unmapped server discovery from firewall rules',
-        'Cross-tower Neo4j Bloom Knowledge Fabric construction',
-        'Targeted SME KT Question Generator replacing 40-hr workshops'
+        'SNMP/CDP & NetFlow telemetry ingestion (ghost asset detection)',
+        '10-Tower scope selector with automated gap synthesis',
+        'ServiceNow / Jira Service Management ticket dump mining'
       ]
     },
     {
       id: 'business_process',
-      title: 'Business Process Support (BPS / BPO)',
-      badge: 'Operations & Workflows',
-      badgeClass: 'bor',
-      icon: '⚙️',
+      title: 'Business Process Services (BPS)',
+      badge: 'Operations + SOPs + Audits',
+      badgeColor: 'bgn',
+      badgeClass: 'bgn',
+      icon: '📋',
       summary: 'Operational transition for Customer Support, Finance & Accounting, HR, and Supply Chain process delivery centers.',
       highlights: [
         'Shadow Excel macro & undocumented procedural workaround detection',
@@ -80,6 +83,15 @@ export default function TransitionLaunchpad() {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <button
+            className="btn bgh"
+            onClick={openControlTowerSimulator}
+            style={{ fontSize: 12, padding: '6px 14px', display: 'flex', alignItems: 'center', gap: 6, border: '1px solid rgba(245,158,11,0.4)', color: '#f59e0b', background: 'rgba(245,158,11,0.08)' }}
+            title="Launch the 9-Week Transition Flight Simulator & Control Tower"
+          >
+            <span>🕹️ Flight Simulator & Control Tower</span>
+          </button>
+
           {activeApp && (
             <button
               className="btn bp"
@@ -97,13 +109,47 @@ export default function TransitionLaunchpad() {
         {!selectedType ? (
           <div>
             {/* Hero Header */}
-            <div style={{ textAlign: 'center', marginBottom: 36 }}>
+            <div style={{ textAlign: 'center', marginBottom: 28 }}>
               <div style={{ fontSize: 28, fontWeight: 800, color: '#ffffff', marginBottom: 10, letterSpacing: '-0.02em' }}>
                 Select Transition Project Type
               </div>
               <div style={{ fontSize: 14, color: 'var(--mu)', maxWidth: 720, margin: '0 auto', lineHeight: 1.6 }}>
                 Every transition is assumed to be <strong>hostile</strong>: incumbent documentation is untrusted, CMDBs contain ghost assets, and ground truth must be reconstructed autonomously via parallel multi-agent telemetry analysis.
               </div>
+            </div>
+
+            {/* Flight Simulator Banner */}
+            <div style={{
+              marginBottom: 28,
+              padding: '16px 22px',
+              borderRadius: 10,
+              background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(99, 102, 241, 0.08) 100%)',
+              border: '1px solid rgba(245, 158, 11, 0.3)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 16,
+              flexWrap: 'wrap'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                <span style={{ fontSize: 30 }}>🕹️</span>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: 8 }}>
+                    Transition Control Tower & 56-Day Flight Simulator
+                    <span className="badge bam" style={{ fontSize: 10, padding: '2px 6px' }}>Dual-Mode Simulator</span>
+                  </div>
+                  <div style={{ fontSize: 12, color: 'var(--mu)', marginTop: 3 }}>
+                    Interactive 9-week pre-flight simulation (180d traditional $\to$ 56d compressed) or live project telemetry with Neo4j Bloom glowing topology & hierarchical tree breakdowns.
+                  </div>
+                </div>
+              </div>
+              <button
+                className="btn bp"
+                onClick={openControlTowerSimulator}
+                style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', color: '#090d16', fontWeight: 700, border: 'none', padding: '9px 18px', fontSize: 13, cursor: 'pointer', borderRadius: 6, display: 'flex', alignItems: 'center', gap: 6 }}
+              >
+                <span>Launch Flight Simulator →</span>
+              </button>
             </div>
 
             {/* 3 Transition Type Cards */}

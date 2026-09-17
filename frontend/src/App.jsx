@@ -15,6 +15,7 @@ import KnowledgeFabric from './components/scenes/KnowledgeFabric.jsx';
 import HostileGaps from './components/scenes/HostileGaps.jsx';
 import TargetedKT from './components/scenes/TargetedKT.jsx';
 import CutoverRisk from './components/scenes/CutoverRisk.jsx';
+import ControlTower from './components/scenes/ControlTower.jsx';
 
 export default function App() {
   const { showLaunchpad, isAnalyzing, activeApp } = useApp();
@@ -60,6 +61,7 @@ export default function App() {
       <div className="body-row">
         <Sidebar />
         <main>
+          <ControlTower />
           <Overview />
           <CodeIntel />
           <Triage />

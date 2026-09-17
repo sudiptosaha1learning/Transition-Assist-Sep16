@@ -42,6 +42,14 @@ export function AppProvider({ children }) {
     setIsAnalyzing(false);
   }, []);
 
+  const openControlTowerSimulator = useCallback(() => {
+    setShowLaunchpad(false);
+    setShowWizard(false);
+    setIsAnalyzing(false);
+    setUnlocked(true);
+    setScene('control_tower');
+  }, []);
+
   const startAgenticAnalysis = useCallback((projectConfig) => {
     setOrchestratingProject(projectConfig);
     setIsAnalyzing(true);
@@ -150,6 +158,7 @@ export function AppProvider({ children }) {
     modelParams,
     enterPlatform,
     switchApp,
+    openControlTowerSimulator,
   };
 
   return <AppCtx.Provider value={value}>{children}</AppCtx.Provider>;
